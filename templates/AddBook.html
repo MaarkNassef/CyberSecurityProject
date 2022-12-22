@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Add book{% endblock %}
+{% block content %}
+<div class="container card rounded-5 col-8 mx-auto p-5">
+    <h1 class="display-5 text-dark mb-3">Add Book</h1>
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+    {% if category == 'danger' %}
+    <div class="alert alert-danger" role="alert">
+        {{message}}
+      </div>
+    {% else %}
+    <div class="alert alert-success" role="alert">
+        {{message}}
+      </div>
+    {% endif %}
+    {% endfor %}
+    <form method="post"  enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="book_title" class="form-label">Book title</label>
+          <input type="text" class="form-control" id="book_title" name="book_title" required>
+        </div>
+        <div class="mb-3">
+          <label for="book_author" class="form-label">Book author</label>
+          <input type="text" class="form-control" id="book_author" name="book_author" required>
+        </div>
+        <div class="mb-3">
+            <label for="book_category" class="form-label">Book category</label>
+            <input type="text" class="form-control" id="book_category" name="book_category" required>
+        </div>
+        <div class="mb-3">
+            <label for="book_stars" class="form-label">Book stars</label>
+            <input type="text" class="form-control" id="book_stars" name="book_stars" required>
+        </div>
+        <div class="mb-3">
+            <label for="book_description" class="form-label">Book description</label>
+            <textarea class="form-control" id="book_description" name="book_description" rows="3" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="book_image" class="form-label">Book image</label>
+            <input class="form-control" type="file" id="book_image" name="book_image" required>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

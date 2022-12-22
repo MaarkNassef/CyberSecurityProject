@@ -1,12 +1,17 @@
-from flask import Flask, redirect, render_template,request, url_for,flash, session, abort, send_file
+from flask import Flask, redirect, render_template,request, url_for,flash, session, abort, send_file, get_flashed_messages
 from Database.database import *
 from CryptographyAES.AES import *
 import os
 import hashlib
 import pyotp
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY']='SK'
+app.config['UPLOAD_FOLDER'] = 'static/uploads/'
+app.config['MAX_CONTENT_LENGTH'] = 5*1024*1024
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg','gif'}
+
 @app.route('/',methods=['GET','POST'])
 def index():
     if 'email' not in session:
@@ -15,7 +20,15 @@ def index():
         search=request.form['search']
         return redirect(url_for('search',word=search))
     data=get_all_books()
-    return render_template('index.html',data=data)
+    newdata = []
+    for i in data:
+        i = list(i)
+        if i[6] == None:
+            with open(os.path.join(app.config['UPLOAD_FOLDER'], get_image(i[1])[1]), 'wb') as f:
+                f.write(get_image(i[1])[2])
+            i[6] = str(url_for('static', filename='uploads/'+get_image(i[1])[1]))
+        newdata.append(i)
+    return render_template('index.html',data=newdata)
 
 @app.route('/signUp',methods=['POST','GET'])
 def signUp():
@@ -63,11 +76,15 @@ def signIn():
 def book(id):
     if 'email' not in session:
         return redirect(url_for('signIn'))
-    data = get_book(id)
+    data = list(get_book(id))
     if request.method=='POST':
         comme = request.form['comm']
         insert_comment(id, get_user_id(session['email']), comme)
     comments = get_comments(id)
+    if data[6] == None:
+        with open(os.path.join(app.config['UPLOAD_FOLDER'], get_image(data[1])[1]), 'wb') as f:
+            f.write(get_image(data[1])[2])
+        data[6] = str(url_for('static', filename='uploads/'+get_image(data[1])[1]))
     return render_template('book.html', data=data, comments=comments)
  
 @app.route('/search/<word>',methods=['GET','POST'])
@@ -78,7 +95,15 @@ def search(word):
         search=request.form['search']
         word=search
     rows = search_book(word)
-    return render_template('search.html',rows=rows)
+    newdata = []
+    for i in rows:
+        i = list(i)
+        if i[6] == None:
+            with open(os.path.join(app.config['UPLOAD_FOLDER'], get_image(i[1])[1]), 'wb') as f:
+                f.write(get_image(i[1])[2])
+            i[6] = str(url_for('static', filename='uploads/'+get_image(i[1])[1]))
+        newdata.append(i)
+    return render_template('search.html',rows=newdata)
 
 @app.route('/about')
 def about():
@@ -104,7 +129,7 @@ def download(filepath):
     else:
         return abort(401)
 
-@app.route('/signIn/2fa/', methods=['GET', 'POST'])
+@app.route('/signIn/2fa', methods=['GET', 'POST'])
 def two_factor_authentication():
     if request.method == 'GET':
         secret = pyotp.random_base32()
@@ -119,4 +144,31 @@ def two_factor_authentication():
         else:
             flash("You have supplied an invalid 2FA token!", "danger")
             return redirect(url_for("two_factor_authentication"))
-            
+
+@app.route('/add_book', methods=['GET', 'POST'])
+def add_book():
+    if 'admin_access' in session:
+        if request.method == 'GET':
+            return render_template('AddBook.html')
+        else:
+            book_title = request.form['book_title']
+            book_author = request.form['book_author']
+            book_category = request.form['book_category']
+            book_stars = request.form['book_stars']
+            book_description = request.form['book_description']
+            book_image = request.files['book_image']
+            if book_image.filename.split('.')[-1] in ALLOWED_EXTENSIONS:
+                filename = secure_filename(book_image.filename)
+                book_image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                image = None
+                with open(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'rb') as f:
+                    image = f.read()
+                #TODO: Check Image Size
+                insert_book(book_title, book_author, book_category, book_stars, book_description,filename, image)
+                flash("Book inserted successfully.",'success')
+            else:
+                flash("Invalid Input",'danger')
+                get_flashed_messages()
+            return render_template('AddBook.html')
+    else:
+        return abort(401)

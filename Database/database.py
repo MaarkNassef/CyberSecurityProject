@@ -57,3 +57,18 @@ def search_book(word: str):
     cur.execute("""SELECT * FROM Books WHERE LOWER(Title) LIKE LOWER(:word) OR LOWER(Category) LIKE LOWER(:word) OR LOWER(Author) LIKE LOWER(:word);""",
     {'word': word})
     return cur.fetchall()
+
+def insert_book(book_title: str, book_author:str, book_category: str, book_stars: str, book_description: str ,image_title: str,  image):
+    connect = sqlite3.connect('Database.db')
+    connect.execute("""INSERT INTO Books (Title,Author,Category,Stars, Description) 
+                        VALUES(:book_title,:book_author,:book_category,:book_stars, :book_description);""",
+    {'book_title':book_title, 'book_author':book_author, 'book_category': book_category, 'book_stars':book_stars, 'book_description':book_description})
+    connect.execute("""INSERT INTO BookImage VALUES(:book_title, :image_title, :image)""",{'book_title':book_title, 'image_title':image_title ,'image':image})
+    connect.commit()
+    connect.close()
+
+def get_image(book_title: str):
+    conn = sqlite3.connect('Database.db')
+    cursor = conn.execute("""SELECT * FROM BOOKIMAGE WHERE book_title = :book_title""",
+    {'book_title': book_title})
+    return cursor.fetchone()

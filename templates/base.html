@@ -66,12 +66,8 @@
       <a href="{{url_for('index')}}" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">
         <span class="fs-4 text-white">Pick Book</span>
       </a>
-      {% if 'email' in session %}
-      <form class="col-12 col-lg-auto mb-3 mb-lg-0 d-flex" role="search" method="post">
-        <input type="search" class="form-control" placeholder="Search..." aria-label="Search" name="search">
-        <button type="submit" class="btn btn-outline-success text-white" style="margin-left:10px; background-color: green;" name="button">Search</button>
-      </form>
-      {% endif %}
+      {% block search %}
+      {% endblock %}
     </div>
   </header>
   {% block content %}{% endblock %}

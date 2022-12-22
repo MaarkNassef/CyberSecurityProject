@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
 {% block title %}Home{% endblock %}
+{% block search %}
+      <form class="col-12 col-lg-auto mb-3 mb-lg-0 d-flex" role="search" method="post">
+        <input type="search" class="form-control" placeholder="Search..." aria-label="Search" name="search">
+        <button type="submit" class="btn btn-outline-success text-white" style="margin-left:10px; background-color: green;" name="button">Search</button>
+      </form>
+{% endblock %}
 {% block content %}
 <div class="row row-cols-1 row-cols-md-4 g-4" style="margin-left: 10%; margin-right: 10%; padding-left: 1%; padding-right: 1%;">
     {% for i in data %}

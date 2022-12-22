@@ -1,6 +1,4 @@
 from flask import Flask, redirect, render_template,request, url_for,flash, session
-import sqlite3
-import GLOBAL
 from Database.database import *
 
 app = Flask(__name__)

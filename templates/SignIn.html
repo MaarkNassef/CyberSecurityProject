@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+        {% block title %}Login{% endblock %}
+        {% block content %}
+        <div class="mask d-flex align-items-center h-100">
+            <div class="container h-100" style="height: 80%; width: 80%;">
+              <div class="row d-flex justify-content-center align-items-center">
+                <div class="col-12 col-md-9 col-lg-7 col-xl-6">
+                  <div class="card" style="border-radius: 15px;">
+                    <div class="card-body p-5">
+                      <h2 class="text-uppercase text-center mb-4">Sign In</h2>
+        
+                      <form method="post">
+                        <div class="form-outline">
+                          <input type="email" name="email" required id="form3Example3cg" class="form-control" />
+                          <label class="form-label" for="form3Example3cg">Your Email</label>
+                        </div>
+        
+                        <div class="form-outline">
+                          <input type="password" required name="password" id="form3Example4cg" class="form-control" />
+                          <label class="form-label" for="form3Example4cg">Password</label>
+                        </div>
+        
+                        {% for message in get_flashed_messages()[0:1] %}
+                            <h6 style="text-align: center; color:red">{{message}}</h6>
+                        {% endfor %}
+      
+                        <div class="d-flex justify-content-center">
+                          <button type="submit" 
+                            class="btn btn-outline-success">Sign In</button>
+                        </div>
+                        <p class="text-center text-muted mt-5 mb-0">Don't have an account? <a href="{{url_for('signUp')}}"
+                            class="fw-bold text-body"><u>Sign up here</u></a></p>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {% endblock %}

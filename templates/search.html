@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<div class="row row-cols-1 row-cols-md-4 g-4" style="margin-left: 10%; margin-right: 10%; padding-left: 1%; padding-right: 1%;">
+    {% for i in rows %}
+    <div class="col">
+      <a href="{{url_for('book',id=i[0])}}" style="text-decoration: none;"> 
+      <div class="card h-100">
+          <img src="{{i[6]}}" class="img-fluid rounded-start" alt="...">
+          <div class="card-body">
+            <h5 class="card-title cover">{{i[1]}}</h5>
+            <h6 style="color: gray;">{{i[2]}}</h6>
+          </div>
+        </div></a>
+      </div>
+      {% endfor %}
+  </div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}{{data[1]}}{% endblock %}
+{% block content %}
+<div class="mask d-flex align-items-center h-100">
+    <div class="container justify-content-center h-100">
+            <h2 class="text-uppercase text-center mb-4 text-white" style="padding: 30px;">{{data[1]}}</h2>
+            <div class="row">
+              <div class="col-3"><img src="{{data[6]}}" style="padding-left: 5%; padding-bottom: 5%; border-radius: 15px;" width="100%"></div>
+              <div class="col-8 align-content-md-center" style="padding-left: 2%; padding-right: 2%;">
+                <h3 class="text-white">{{data[2]}}</h3>
+                <h5 class="text-white">{{data[3]}}</h5>
+                <h5 class="text-white">{{data[4]}} Stars</h5>
+                <h5 class="text-white" style="margin-top: 5%;">{{data[5]}}</h5>
+              </div>
+            </div>
+            <h2 class="text-uppercase text-center text-white" style="padding: 30px;">Comments</h2>
+            <div class="row">
+              <div class="col align-items-center">
+              <form method="post">
+                <div class="form-group">
+                  <textarea aria-required="true" name="comm" placeholder="Enter your comment..." name="comment" required id="form3Example3cg" class="form-control"></textarea>
+                  <button  style="background-color: gray; margin-top: 1%; right:0 ; color: white;" class="btn btn-outline-success " type="submit">Comment</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <br><br><br>
+          <div class="align-items-center justify-content-center">
+          {% for i in comments: %}
+          <div class="row" style="margin: auto;">
+            <h4 class="text-light text-uppercase" style="padding: 5px;">{{i[0]}}</h4>
+            <div class="card" style="border-radius: 15px; margin-bottom: 30px; opacity: 70%; width: fit-content;">
+              <div>
+                <h5 class="text-dark" style="padding: 5px;">{{i[1]}}</h5>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          </div>
+        </div>
+  </div>
+ 
+
+{% endblock %}

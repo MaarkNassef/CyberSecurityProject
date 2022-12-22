@@ -1,6 +1,7 @@
 from flask import Flask, redirect, render_template,request, url_for,flash, session
 import sqlite3
 import GLOBAL
+from Database.database import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY']='SK'
@@ -10,12 +11,8 @@ def index():
         return redirect(url_for('signIn'))
     if request.method=='POST':
         search=request.form['search']
-        return redirect(url_for('search',word=search))      
-    connect = sqlite3.connect('Database.db')
-    cur=connect.cursor()
-    cur.execute("select * from Books")
-    data=cur.fetchall()
-    connect.close()
+        return redirect(url_for('search',word=search))
+    data=get_all_books()
     return render_template('index.html',data=data)
 
 @app.route('/signUp',methods=['POST','GET'])
@@ -26,11 +23,11 @@ def signUp():
         
         password = request.form['password']
         repPassword = request.form['repPassword']
-        connect = sqlite3.connect('Database.db')
         if password==repPassword:
-            connect.execute(f"""INSERT INTO Users (Name,Email,Password) VALUES('{name}','{email}','{password}');""")
-            session['email']= email
-            connect.commit()
+            if insert_user(name, email, password):
+                session['email']= email
+            else:
+                flash("User has an account with this email.")
             return redirect(url_for('index'))
         else:
             flash("Password doesn't match!!")  
@@ -44,12 +41,8 @@ def signIn():
     if request.method=='POST':
         email = request.form['email']
         password = request.form['password']
-        connect = sqlite3.connect('Database.db')
-        row=connect.execute(f"select Password from Users where Email='{email}';")
-        row = row.fetchone()
-        if row[0] == password:
+        if authentication(email, password):
             session['email']= email
-            #print(GLOBAL.userEmail)
             return redirect(url_for('index'))
         else:
             flash("Password doesn't match!!") 
@@ -61,20 +54,11 @@ def signIn():
 def book(id):
     if 'email' not in session:
         return redirect(url_for('signIn'))
-    connect = sqlite3.connect('Database.db')
-    cur=connect.cursor()
-    cur.execute(f"select * from Books WHERE book_id = {id};")
-    data=cur.fetchone()
+    data = get_book(id)
     if request.method=='POST':
         comme = request.form['comm']
-        cur = connect.cursor()
-        #print(GLOBAL.getEmail())
-        cur.execute(f"""INSERT INTO Comments (book_id,User_id,book_comm) VALUES('{id}','{GLOBAL.getUserId(session['email'])}','{comme}');""")
-        connect.commit()
-    cur = connect.cursor()
-    cur.execute(f"SELECT u.Name,c.book_comm FROM Users u, Comments c WHERE c.book_id = '{id}' AND u.id = c.User_id ORDER BY c.comm_id DESC;")
-    comments = cur.fetchall()
-    connect.close()
+        insert_comment(id, get_user_id(session['email']), comme)
+    comments = get_comments(id)
     return render_template('book.html', data=data, comments=comments)
  
 @app.route('/search/<word>',methods=['GET','POST'])
@@ -84,12 +68,7 @@ def search(word):
     if request.method=='POST':
         search=request.form['search']
         word=search
-    conn = sqlite3.connect('Database.db')
-    cur = conn.cursor()
-    query = f"SELECT * FROM Books WHERE LOWER(Title) LIKE LOWER('%{word}%') OR LOWER(Category) LIKE LOWER('%{word}%') OR LOWER(Author) LIKE LOWER('%{word}%');"
-    cur.execute(query)
-    rows = cur.fetchall()
-    conn.close()
+    rows = search_book(word)
     return render_template('search.html',rows=rows)
 
 @app.route('/about')

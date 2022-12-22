@@ -48,7 +48,7 @@ def signIn():
             return redirect(url_for('admin'))
         password = hashlib.sha256(password.encode('utf-8')).hexdigest()
         if authentication(email, password):
-            session['email'] = email
+            session['temp_email'] = email
             return redirect(url_for('two_factor_authentication'))
         else:
             flash("Password doesn't match!!") 
@@ -111,6 +111,7 @@ def two_factor_authentication():
         otp = int(request.form.get("otp"))
 
         if pyotp.TOTP(secret).verify(otp):
+            session['email'] = session['temp_email']
             return redirect(url_for("index"))
         else:
             flash("You have supplied an invalid 2FA token!", "danger")

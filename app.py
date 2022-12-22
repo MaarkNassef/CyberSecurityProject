@@ -1,5 +1,7 @@
-from flask import Flask, redirect, render_template,request, url_for,flash, session
+from flask import Flask, redirect, render_template,request, url_for,flash, session, abort, send_file
 from Database.database import *
+import os
+import hashlib
 
 app = Flask(__name__)
 app.config['SECRET_KEY']='SK'
@@ -18,10 +20,10 @@ def signUp():
     if request.method=="POST":
         name = request.form['name']
         email = request.form['email']
-        
         password = request.form['password']
         repPassword = request.form['repPassword']
         if password==repPassword:
+            password = hashlib.sha256(password.encode('utf-8')).hexdigest()
             if insert_user(name, email, password):
                 session['email']= email
             else:
@@ -39,8 +41,13 @@ def signIn():
     if request.method=='POST':
         email = request.form['email']
         password = request.form['password']
+        if email == 'admin@domain.com' and password == 'admin':
+            session['email'] = email
+            session['admin_access'] = True
+            return redirect(url_for('admin'))
+        password = hashlib.sha256(password.encode('utf-8')).hexdigest()
         if authentication(email, password):
-            session['email']= email
+            session['email'] = email
             return redirect(url_for('index'))
         else:
             flash("Password doesn't match!!") 
@@ -73,3 +80,22 @@ def search(word):
 def about():
     return render_template('about.html')
 
+@app.route('/admin')
+def admin():
+    if 'admin_access' not in session:
+        return abort(401)
+    return render_template('admin.html')
+
+@app.route('/admin/<path:filepath>')
+def download(filepath):
+    if 'admin_access' in session:
+        safe_path = 'files/safe/'
+        safe_path = os.path.realpath(safe_path)
+        print(safe_path)
+        print(os.path.realpath(filepath))
+        if os.path.commonprefix((os.path.realpath(filepath),safe_path)) == safe_path:
+            return send_file(filepath)
+        else:
+            return abort(401)
+    else:
+        return abort(401)

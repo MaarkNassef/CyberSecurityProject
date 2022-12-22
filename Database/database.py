@@ -6,11 +6,11 @@ def get_all_books():
     cur.execute("select * from Books")
     return cur.fetchall()
 
-def insert_user(name: str, email: str, password: str) -> bool:
+def insert_user(name: str, email: str, password: str, credit, credit_tag, credit_nonce) -> bool:
     try:
         connect = sqlite3.connect('Database.db')
-        connect.execute("""INSERT INTO Users (Name,Email,Password) VALUES(:name, :email, :password);""",
-        {'name':name, 'email':email, 'password': password})
+        connect.execute("""INSERT INTO Users (Name,Email,Password,Credit, Credit_tag, Credit_nonce) VALUES(:name, :email, :password, :credit, :credit_tag, :credit_nonce);""",
+        {'name':name, 'email':email, 'password': password, 'credit':credit, 'credit_tag':credit_tag, 'credit_nonce': credit_nonce})
         connect.commit()
         connect.close()
         return True

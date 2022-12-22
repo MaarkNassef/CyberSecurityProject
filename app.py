@@ -1,5 +1,6 @@
 from flask import Flask, redirect, render_template,request, url_for,flash, session, abort, send_file
 from Database.database import *
+from CryptographyAES.AES import *
 import os
 import hashlib
 import pyotp
@@ -23,9 +24,11 @@ def signUp():
         email = request.form['email']
         password = request.form['password']
         repPassword = request.form['repPassword']
+        credit = request.form['credit']
+        credit = encrypt(credit)
         if password==repPassword:
             password = hashlib.sha256(password.encode('utf-8')).hexdigest()
-            if insert_user(name, email, password):
+            if insert_user(name, email, password, **credit):
                 session['email']= email
             else:
                 flash("User has an account with this email.")

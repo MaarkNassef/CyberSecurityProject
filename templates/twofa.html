@@ -35,7 +35,7 @@
         {% endif %}
         {% endwith %}
         <form method="POST">
-          <div class="form-group mb-3">
+          <div class="form-group mb-3 text-dark">
             <label for="otp">Generated OTP</label>
             <input type="hidden" name="secret" value="{{ secret }}" required>
             <input type="number" class="form-control" id="otp" name="otp" required>

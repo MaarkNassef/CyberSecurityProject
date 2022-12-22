@@ -9,7 +9,6 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.config['SECRET_KEY']='SK'
 app.config['UPLOAD_FOLDER'] = 'static/uploads/'
-app.config['MAX_CONTENT_LENGTH'] = 5*1024*1024
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg','gif'}
 
 @app.route('/',methods=['GET','POST'])
@@ -163,12 +162,13 @@ def add_book():
                 image = None
                 with open(os.path.join(app.config['UPLOAD_FOLDER'], filename), 'rb') as f:
                     image = f.read()
-                #TODO: Check Image Size
-                insert_book(book_title, book_author, book_category, book_stars, book_description,filename, image)
-                flash("Book inserted successfully.",'success')
+                if len(image) <= 5*1024*1024:
+                    insert_book(book_title, book_author, book_category, book_stars, book_description,filename, image)
+                    flash("Book inserted successfully.",'success')
+                else:
+                    flash("Invalid Size",'danger')
             else:
-                flash("Invalid Input",'danger')
-                get_flashed_messages()
+                flash("Invalid Extension",'danger')
             return render_template('AddBook.html')
     else:
         return abort(401)

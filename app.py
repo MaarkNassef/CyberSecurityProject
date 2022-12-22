@@ -2,6 +2,7 @@ from flask import Flask, redirect, render_template,request, url_for,flash, sessi
 from Database.database import *
 import os
 import hashlib
+import pyotp
 
 app = Flask(__name__)
 app.config['SECRET_KEY']='SK'
@@ -48,7 +49,7 @@ def signIn():
         password = hashlib.sha256(password.encode('utf-8')).hexdigest()
         if authentication(email, password):
             session['email'] = email
-            return redirect(url_for('index'))
+            return redirect(url_for('two_factor_authentication'))
         else:
             flash("Password doesn't match!!") 
             return render_template('SignIn.html')
@@ -99,3 +100,19 @@ def download(filepath):
             return abort(401)
     else:
         return abort(401)
+
+@app.route('/signIn/2fa/', methods=['GET', 'POST'])
+def two_factor_authentication():
+    if request.method == 'GET':
+        secret = pyotp.random_base32()
+        return render_template('twofa.html', secret=secret)
+    else:
+        secret = request.form.get("secret")
+        otp = int(request.form.get("otp"))
+
+        if pyotp.TOTP(secret).verify(otp):
+            return redirect(url_for("index"))
+        else:
+            flash("You have supplied an invalid 2FA token!", "danger")
+            return redirect(url_for("two_factor_authentication"))
+            

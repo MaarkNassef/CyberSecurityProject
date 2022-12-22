@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Login|Two factor Authentication{% endblock %}
+{% block content %}
+<div class="container card rounded-5 col-8 mx-auto p-5">
+    <h1 class="display-5 text-dark mb-3 text-center">Two factor Authentication</h1>
+    <div class="text-black">
+        <form>
+          <div>
+            <h5>Instructions!</h5>
+            <ul>
+              <li>Download <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&hl=en&gl=US" target="_blank">Google Authenticator</a> on your mobile.</li>
+              <li>Create a new account with <strong>setup key</strong> method.</li>
+              <li>Provide the required details (name, secret key).</li>
+              <li>Select time-based authentication.</li>
+              <li>Submit the generated key in the form.</li>
+            </ul>
+          </div>
+          <div class="form-group mb-3">
+            <label for="secret">Secret Token</label>
+            <input type="text" class="form-control" id="secret" value="{{ secret }}" readonly>
+          </div>
+          <div class="mb-3 text-end">
+            <button type="button" class="btn btn-primary" onclick="copySecret()">Copy Secret</button>
+          </div>
+        </form>
+      </div>
+      <div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert">
+          {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <form method="POST">
+          <div class="form-group mb-3">
+            <label for="otp">Generated OTP</label>
+            <input type="hidden" name="secret" value="{{ secret }}" required>
+            <input type="number" class="form-control" id="otp" name="otp" required>
+          </div>
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary">Authenticate User</button>
+          </div>
+        </form>
+      </div>
+</div>
+<script>
+    function copySecret() {
+      /* Get the text field */
+      var copyText = document.getElementById("secret");
+  
+      /* Select the text field */
+      copyText.select();
+      copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+  
+      /* Copy the text inside the text field */
+      document.execCommand("copy");
+  
+      alert("Successfully copied TOTP secret token!");
+    }
+  </script>
+{% endblock %}

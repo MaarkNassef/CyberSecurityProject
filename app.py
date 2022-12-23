@@ -5,6 +5,7 @@ import os
 import hashlib
 import pyotp
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY']='SK'
@@ -53,20 +54,44 @@ def signUp():
 
 @app.route('/signIn',methods=['POST','GET'])
 def signIn():
-    session.clear()
+    if 'email' in session:
+        session.clear()
     if request.method=='POST':
         email = request.form['email']
         password = request.form['password']
-        if email == 'admin@domain.com' and password == 'admin':
+        if 'wait' in session:
+            delta = (datetime.now()-datetime.strptime(session['wait'], "%Y-%m-%d %H:%M:%S.%f")).total_seconds()
+            if delta >= 60*10:
+                session.clear()
+        if 'wait' in session:
+            delta = (datetime.now()-datetime.strptime(session['wait'], "%Y-%m-%d %H:%M:%S.%f")).total_seconds()
+            if delta < 60*10:
+                flash(f"Wrong password, you have 0 tries left. You have to wait {10-int(delta)//60} minutes.")
+                return render_template('SignIn.html')
+        elif email == 'admin@domain.com' and password == 'admin':
+            session.clear()
             session['email'] = email
             session['admin_access'] = True
             return redirect(url_for('admin'))
-        password = hashlib.sha256(password.encode('utf-8')).hexdigest()
-        if authentication(email, password):
+        elif authentication(email, hashlib.sha256(password.encode('utf-8')).hexdigest()):
+            session.clear()
             session['temp_email'] = email
             return redirect(url_for('two_factor_authentication'))
         else:
-            flash("Password doesn't match!!") 
+            if 'one_minute_time' not in session:
+                session['one_minute_time'] = str(datetime.now())
+            if (datetime.now()-datetime.strptime(session['one_minute_time'], "%Y-%m-%d %H:%M:%S.%f")).total_seconds()<60:
+                if 'login_attempts' not in session:
+                    session['login_attempts'] = 3
+                if session['login_attempts'] > 0:
+                    session['login_attempts'] -= 1
+                    if session['login_attempts'] != 0:
+                        flash(f"Wrong password, you have {session['login_attempts']} tries left.")
+                if session['login_attempts'] == 0:
+                    session['wait'] = str(datetime.now())
+                    flash(f"Wrong password, you have {session['login_attempts']} tries left. You have to wait 10 minutes.")
+            else:
+                session.clear()
             return render_template('SignIn.html')
     else:
         return render_template('SignIn.html')

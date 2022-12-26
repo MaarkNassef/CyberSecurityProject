@@ -182,6 +182,7 @@ def two_factor_authentication():
             flash("You have supplied an invalid 2FA token!", "danger")
             return redirect(url_for("two_factor_authentication"))
 
+#  Security Misconfiguration only image extensions. Size limitation should be applied
 @app.route('/add_book', methods=['GET', 'POST'])
 def add_book():
     if 'admin_access' in session:

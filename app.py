@@ -153,7 +153,6 @@ def download(filepath):
     else:
         return abort(401)
 # Identification and Authentication Failure
-#
 @app.route('/signIn/2fa', methods=['GET', 'POST'])
 def two_factor_authentication():
     if request.method == 'GET':

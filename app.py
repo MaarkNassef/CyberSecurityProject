@@ -60,11 +60,15 @@ def signIn():
         email = request.form['email']
         password = request.form['password']
         if 'wait' in session:
+            #diffrence between current time and time when user enter wrong password three times or more
             delta = (datetime.now()-datetime.strptime(session['wait'], "%Y-%m-%d %H:%M:%S.%f")).total_seconds()
+            #check if diffrence between current time and time when user enter wrong password three times or more is greater than or equal ten minutes
             if delta >= 60*10:
                 session.clear()
         if 'wait' in session:
+            #diffrence between current time and time when user enter wrong password three times or more
             delta = (datetime.now()-datetime.strptime(session['wait'], "%Y-%m-%d %H:%M:%S.%f")).total_seconds()
+            #check if diffrence between current time and time when user enter wrong password three times or more is less than ten minutes
             if delta < 60*10:
                 flash(f"Wrong password, you have 0 tries left. You have to wait {10-int(delta)//60} minutes.")
                 return render_template('SignIn.html')
@@ -78,15 +82,19 @@ def signIn():
             session['temp_email'] = email
             return redirect(url_for('two_factor_authentication'))
         else:
+            #store time when user enter wrong password
             if 'one_minute_time' not in session:
                 session['one_minute_time'] = str(datetime.now())
+            #check if diffrence between current time and time when user enter wrong password whithin minute
             if (datetime.now()-datetime.strptime(session['one_minute_time'], "%Y-%m-%d %H:%M:%S.%f")).total_seconds()<60:
+                #user attempts to sign in with wrong password
                 if 'login_attempts' not in session:
                     session['login_attempts'] = 3
                 if session['login_attempts'] > 0:
                     session['login_attempts'] -= 1
                     if session['login_attempts'] != 0:
                         flash(f"Wrong password, you have {session['login_attempts']} tries left.")
+                #store time when user enter wrong password three times or more
                 if session['login_attempts'] == 0:
                     session['wait'] = str(datetime.now())
                     flash(f"Wrong password, you have {session['login_attempts']} tries left. You have to wait 10 minutes.")

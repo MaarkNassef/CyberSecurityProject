@@ -4,6 +4,7 @@
 <div class="container card rounded-5 col-8 mx-auto p-5">
     <h1 class="display-5 text-dark mb-3 text-center">Two factor Authentication</h1>
     <div class="text-black">
+      {% if secret != None %}
         <form>
           <div>
             <h5>Instructions!</h5>
@@ -23,6 +24,15 @@
             <button type="button" class="btn btn-primary" onclick="copySecret()">Copy Secret</button>
           </div>
         </form>
+        {% else %}
+        <div>
+          <h5>Instructions!</h5>
+          <ul>
+            <li>Get OTP from <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&hl=en&gl=US" target="_blank">Google Authenticator</a> on your mobile.</li>
+            <li>Submit the generated key in the form.</li>
+          </ul>
+        </div>
+        {% endif %}
       </div>
       <div>
         {% with messages = get_flashed_messages(with_categories=true) %}

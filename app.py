@@ -156,10 +156,15 @@ def download(filepath):
 @app.route('/signIn/2fa', methods=['GET', 'POST'])
 def two_factor_authentication():
     if request.method == 'GET':
-        secret = pyotp.random_base32()
-        return render_template('twofa.html', secret=secret)
+        if get_secret_token(get_user_id(session['temp_email'])) is None:
+            secret = pyotp.random_base32()
+            set_secret_token(get_user_id(session['temp_email']),secret)
+            return render_template('twofa.html', secret=secret)
+        else:
+            secret = get_secret_token(get_user_id(session['temp_email']))
+            return render_template('twofa.html', secret=None)
     else:
-        secret = request.form.get("secret")
+        secret = get_secret_token(get_user_id(session['temp_email']))
         otp = int(request.form.get("otp"))
 
         if pyotp.TOTP(secret).verify(otp):

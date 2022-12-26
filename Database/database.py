@@ -72,3 +72,16 @@ def get_image(book_title: str):
     cursor = conn.execute("""SELECT * FROM BOOKIMAGE WHERE book_title = :book_title""",
     {'book_title': book_title})
     return cursor.fetchone()
+
+def get_secret_token(user_id: int):
+    conn = sqlite3.connect('Database.db')
+    cursor = conn.execute("""SELECT SecretToken FROM Users WHERE id = :user_id""",
+    {'user_id': user_id})
+    return cursor.fetchone()[0]
+
+def set_secret_token(user_id: int, secret_token: str):
+    conn = sqlite3.connect('Database.db')
+    conn.execute("""UPDATE Users SET SecretToken = :secret_token WHERE id = :user_id""",
+    {'user_id': user_id, 'secret_token': secret_token})
+    conn.commit()
+    conn.close()

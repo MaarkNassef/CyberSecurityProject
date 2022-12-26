@@ -132,13 +132,13 @@ def search(word):
 @app.route('/about')
 def about():
     return render_template('about.html')
-
+#admin check /admin will go to admin page not admin unathourized
 @app.route('/admin')
 def admin():
     if 'admin_access' not in session:
         return abort(401)
     return render_template('admin.html')
-
+#Bath Traversl downlaod
 @app.route('/admin/<path:filepath>')
 def download(filepath):
     if 'admin_access' in session:
@@ -152,7 +152,8 @@ def download(filepath):
             return abort(401)
     else:
         return abort(401)
-
+# Identification and Authentication Failure
+#
 @app.route('/signIn/2fa', methods=['GET', 'POST'])
 def two_factor_authentication():
     if request.method == 'GET':
@@ -168,7 +169,7 @@ def two_factor_authentication():
         else:
             flash("You have supplied an invalid 2FA token!", "danger")
             return redirect(url_for("two_factor_authentication"))
-
+#  Security Misconfiguration only image extensions. Size limitation should be applied
 @app.route('/add_book', methods=['GET', 'POST'])
 def add_book():
     if 'admin_access' in session:

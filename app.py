@@ -148,6 +148,7 @@ def admin():
         return abort(401)
     return render_template('admin.html')
 
+# Path Traversal:
 @app.route('/admin/<path:filepath>')
 def download(filepath):
     if 'admin_access' in session:
@@ -155,6 +156,7 @@ def download(filepath):
         safe_path = os.path.realpath(safe_path)
         print(safe_path)
         print(os.path.realpath(filepath))
+        # Check if the entered path is in safe folder.
         if os.path.commonprefix((os.path.realpath(filepath),safe_path)) == safe_path:
             return send_file(filepath)
         else:
@@ -162,10 +164,12 @@ def download(filepath):
     else:
         return abort(401)
 
+# Two-Factor Authentication:
 @app.route('/signIn/2fa', methods=['GET', 'POST'])
 def two_factor_authentication():
     if request.method == 'GET':
         if get_secret_token(get_user_id(session['temp_email'])) is None:
+            # Generating New Secret Token
             secret = pyotp.random_base32()
             set_secret_token(get_user_id(session['temp_email']),secret)
             return render_template('twofa.html', secret=secret)
@@ -176,6 +180,7 @@ def two_factor_authentication():
         secret = get_secret_token(get_user_id(session['temp_email']))
         otp = int(request.form.get("otp"))
 
+        # Verification
         if pyotp.TOTP(secret).verify(otp):
             session['email'] = session['temp_email']
             return redirect(url_for("index"))

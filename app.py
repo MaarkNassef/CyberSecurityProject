@@ -13,6 +13,7 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg','gif'}
 
 @app.route('/',methods=['GET','POST'])
+#render template is preventing xss injection valnurability
 def index():
     if 'email' not in session:
         return redirect(url_for('signIn'))

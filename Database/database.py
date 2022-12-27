@@ -5,7 +5,7 @@ def get_all_books():
     cur=connect.cursor()
     cur.execute("select * from Books")
     return cur.fetchall()
-
+#the use of bind variables to prevent sql enjection valnurability
 def insert_user(name: str, email: str, password: str, credit, credit_tag, credit_nonce) -> bool:
     try:
         connect = sqlite3.connect('Database.db')

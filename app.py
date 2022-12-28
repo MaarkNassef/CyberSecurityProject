@@ -152,7 +152,7 @@ def admin():
 @app.route('/admin/<path:filepath>')
 def download(filepath):
     if 'admin_access' in session:
-        safe_path = 'files/safe/'
+        safe_path = 'files/safe/file.txt'
         safe_path = os.path.realpath(safe_path)
         print(safe_path)
         print(os.path.realpath(filepath))

@@ -13,6 +13,7 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg','gif'}
 
 @app.route('/',methods=['GET','POST'])
+#render template is preventing xss injection valnurability
 def index():
     if 'email' not in session:
         return redirect(url_for('signIn'))
@@ -60,11 +61,15 @@ def signIn():
         email = request.form['email']
         password = request.form['password']
         if 'wait' in session:
+            #diffrence between current time and time when user enter wrong password three times or more
             delta = (datetime.now()-datetime.strptime(session['wait'], "%Y-%m-%d %H:%M:%S.%f")).total_seconds()
+            #check if diffrence between current time and time when user enter wrong password three times or more is greater than or equal ten minutes
             if delta >= 60*10:
                 session.clear()
         if 'wait' in session:
+            #diffrence between current time and time when user enter wrong password three times or more
             delta = (datetime.now()-datetime.strptime(session['wait'], "%Y-%m-%d %H:%M:%S.%f")).total_seconds()
+            #check if diffrence between current time and time when user enter wrong password three times or more is less than ten minutes
             if delta < 60*10:
                 flash(f"Wrong password, you have 0 tries left. You have to wait {10-int(delta)//60} minutes.")
                 return render_template('SignIn.html')
@@ -78,15 +83,19 @@ def signIn():
             session['temp_email'] = email
             return redirect(url_for('two_factor_authentication'))
         else:
+            #store time when user enter wrong password
             if 'one_minute_time' not in session:
                 session['one_minute_time'] = str(datetime.now())
+            #check if diffrence between current time and time when user enter wrong password whithin minute
             if (datetime.now()-datetime.strptime(session['one_minute_time'], "%Y-%m-%d %H:%M:%S.%f")).total_seconds()<60:
+                #user attempts to sign in with wrong password
                 if 'login_attempts' not in session:
                     session['login_attempts'] = 3
                 if session['login_attempts'] > 0:
                     session['login_attempts'] -= 1
                     if session['login_attempts'] != 0:
                         flash(f"Wrong password, you have {session['login_attempts']} tries left.")
+                #store time when user enter wrong password three times or more
                 if session['login_attempts'] == 0:
                     session['wait'] = str(datetime.now())
                     flash(f"Wrong password, you have {session['login_attempts']} tries left. You have to wait 10 minutes.")
@@ -139,13 +148,15 @@ def admin():
         return abort(401)
     return render_template('admin.html')
 
+# Path Traversal:
 @app.route('/admin/<path:filepath>')
 def download(filepath):
     if 'admin_access' in session:
-        safe_path = 'files/safe/'
+        safe_path = 'files/safe/file.txt'
         safe_path = os.path.realpath(safe_path)
         print(safe_path)
         print(os.path.realpath(filepath))
+        # Check if the entered path is in safe folder.
         if os.path.commonprefix((os.path.realpath(filepath),safe_path)) == safe_path:
             return send_file(filepath)
         else:
@@ -153,10 +164,12 @@ def download(filepath):
     else:
         return abort(401)
 
+# Two-Factor Authentication:
 @app.route('/signIn/2fa', methods=['GET', 'POST'])
 def two_factor_authentication():
     if request.method == 'GET':
         if get_secret_token(get_user_id(session['temp_email'])) is None:
+            # Generating New Secret Token
             secret = pyotp.random_base32()
             set_secret_token(get_user_id(session['temp_email']),secret)
             return render_template('twofa.html', secret=secret)
@@ -167,6 +180,7 @@ def two_factor_authentication():
         secret = get_secret_token(get_user_id(session['temp_email']))
         otp = int(request.form.get("otp"))
 
+        # Verification
         if pyotp.TOTP(secret).verify(otp):
             session['email'] = session['temp_email']
             return redirect(url_for("index"))
@@ -174,6 +188,7 @@ def two_factor_authentication():
             flash("You have supplied an invalid 2FA token!", "danger")
             return redirect(url_for("two_factor_authentication"))
 
+#  Security Misconfiguration only image extensions. Size limitation should be applied
 @app.route('/add_book', methods=['GET', 'POST'])
 def add_book():
     if 'admin_access' in session:
